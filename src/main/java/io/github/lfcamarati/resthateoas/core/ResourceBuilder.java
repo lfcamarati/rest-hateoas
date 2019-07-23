@@ -15,7 +15,15 @@ public class ResourceBuilder {
         for(Field field : fields) {
             if(field.isAnnotationPresent(Self.class)) {
                 Self self = field.getAnnotation(Self.class);
-                result.self(self.value());
+                String linkRegexp = "\\{"+ field.getName() +"\\}";
+
+                try {
+                    field.setAccessible(true);
+                    result.self(self.value().replaceAll(linkRegexp, field.get(resource).toString()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    continue;
+                }
             }
         }
 
