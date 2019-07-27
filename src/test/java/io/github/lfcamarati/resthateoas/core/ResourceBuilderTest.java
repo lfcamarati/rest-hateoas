@@ -3,6 +3,7 @@ package io.github.lfcamarati.resthateoas.core;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.github.lfcamarati.resthateoas.core.jsonplaceholder.Post;
+import io.github.lfcamarati.resthateoas.core.jsonplaceholder.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,10 +23,14 @@ class ResourceBuilderTest {
 
     @Test
     void first() {
+        // Arrange
         final Post post = new Post();
-        post.setId(2L);
+        final User user = new User();
 
+        // Act
         ResourceBase actual = fixture.create(post);
+
+        // Assert
         System.out.println(gson.toJson(actual));
     }
 }
