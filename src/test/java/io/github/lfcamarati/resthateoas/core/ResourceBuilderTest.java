@@ -23,7 +23,7 @@ class ResourceBuilderTest {
     @Test
     void first() {
         final Post post = new Post();
-        post.setId(10L);
+        post.setId(2L);
 
         ResourceBase actual = fixture.create(post);
         System.out.println(gson.toJson(actual));
