@@ -3,9 +3,10 @@ package io.github.lfcamarati.resthateoas.core.jsonplaceholder;
 import io.github.lfcamarati.resthateoas.annotations.Embedded;
 import io.github.lfcamarati.resthateoas.annotations.Link;
 import io.github.lfcamarati.resthateoas.annotations.Self;
+import io.github.lfcamarati.resthateoas.core.Resource;
 
 @Link(key = "comments", href = "https://jsonplaceholder.typicode.com/posts/{id}/comments")
-public class Post {
+public class Post extends Resource {
 
     @Self("https://jsonplaceholder.typicode.com/posts/{id}")
     private Long id = 1L;
