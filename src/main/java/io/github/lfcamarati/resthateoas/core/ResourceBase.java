@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ResourceBase {
+public class ResourceBase extends Resource {
 
     private Map<String, Link> _links = new HashMap<>();
     private Map<String, ResourceBase> _embedded = new HashMap<>();

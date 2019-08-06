@@ -1,12 +1,15 @@
 package io.github.lfcamarati.resthateoas.core;
 
+import java.util.Collections;
+import java.util.Map;
+
 public abstract class Resource {
 
-    public Links getLinks() {
-        return null;
+    public Map<String, Link> get_links() {
+        return Collections.emptyMap();
     }
 
-    public Embeddeds getEmbeddeds() {
-        return null;
+    public Map<String, ResourceBase> get_embedded() {
+        return Collections.emptyMap();
     }
 }
