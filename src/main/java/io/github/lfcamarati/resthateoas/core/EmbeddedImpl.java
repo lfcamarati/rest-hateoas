@@ -1,11 +1,11 @@
 package io.github.lfcamarati.resthateoas.core;
 
-class Embedded {
-    static final String SELF = "self";
+class EmbeddedImpl {
+    static final String EMBEDDEDS = "_embedded";
 
     private String href;
 
-    public Embedded(String href) {
+    public EmbeddedImpl(String href) {
         this.href = href;
     }
 }

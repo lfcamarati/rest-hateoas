@@ -6,7 +6,7 @@ import io.github.lfcamarati.resthateoas.annotations.Self;
 import io.github.lfcamarati.resthateoas.core.Resource;
 
 @Link(key = "comments", href = "https://jsonplaceholder.typicode.com/posts/{id}/comments")
-public class Post extends Resource {
+public class Post implements Resource {
 
     @Self("https://jsonplaceholder.typicode.com/posts/{id}")
     private Long id = 1L;

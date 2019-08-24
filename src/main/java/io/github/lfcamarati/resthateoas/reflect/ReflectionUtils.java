@@ -3,14 +3,14 @@ package io.github.lfcamarati.resthateoas.reflect;
 import io.github.lfcamarati.resthateoas.annotations.Embedded;
 import io.github.lfcamarati.resthateoas.annotations.Link;
 import io.github.lfcamarati.resthateoas.annotations.Self;
-import io.github.lfcamarati.resthateoas.core.ResourceBase;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.of;
@@ -20,60 +20,73 @@ public class ReflectionUtils {
     private Object resource;
     private Class<? extends Object> klass;
 
-    private List<Link> links = new ArrayList<>();
-    private Self self = null;
-    Map<String, Object> embeddeds = new HashMap<>();
-
     public ReflectionUtils(Object resource) {
         this.resource = resource;
         this.klass = resource.getClass();
-
-        processSelf();
-        processLinks();
-        processEmbeddeds();
     }
 
-    private void processSelf() {
+    public Self self() {
         List<Field> fields = getFields(Self.class);
 
         if(fields.isEmpty()) {
-            return;
+            return null;
         }
 
         if(fields.size() > 1) {
             throw new IllegalStateException("Only 1 self is allowed");
         }
 
-        this.self = fields.get(0).getAnnotation(Self.class);
+        return fields.get(0).getAnnotation(Self.class);
     }
 
-    private void processLinks() {
+    public List<Link> links() {
         Link[] links = klass.getAnnotationsByType(Link.class);
 
         if(links == null || links.length == 0) {
-            return;
+            return Collections.emptyList();
         }
 
-        this.links = of(links).collect(toList());
+        return of(links).collect(toList());
     }
     
-    private void processEmbeddeds() {
-        try {
-            List<Field> fields = getFields(Embedded.class);
+    public Map<String, Object> embeddeds() {
+        List<Field> fields = getFields(Embedded.class);
+        Map<String, Object> embeddeds = new HashMap<>();
 
-            embeddeds = new HashMap<>();
-
-            for (Field field : fields) {
+        for (Field field : fields) {
+            try {
                 field.setAccessible(true);
                 Object value = field.get(resource);
 
                 if (value != null) {
                     embeddeds.put(field.getName(), value);
                 }
+            } catch (Exception ex) {
+                System.out.println(ex.getMessage());
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
         }
+
+        return embeddeds;
+    }
+    
+    public Map<String, Object> simpleFields() {
+        List<Field> simpleFields = getSimpleFields(Self.class, Link.class, Embedded.class);
+        Map<String, Object> values = new HashMap<>();
+
+        for (Field field : simpleFields) {
+            try {
+                field.setAccessible(true);
+                Object value = field.get(resource);
+
+                if (value != null) {
+                    values.put(field.getName(), value);
+                }
+            } catch (Exception ex) {
+                System.out.println(ex.getMessage());
+            }
+        }
+
+        return values;
     }
 
     private List<Field> getFields(Class<? extends Annotation> annotationClass) {
@@ -81,7 +94,10 @@ public class ReflectionUtils {
                 .collect(toList());
     }
 
-    public void appy(ResourceBase resourceBase) {
-        resourceBase.apply(self, links, embeddeds);
+    @SafeVarargs
+    private final List<Field> getSimpleFields(Class<? extends Annotation>... annotationClass) {
+        return of(klass.getDeclaredFields())
+                       .filter(f -> Stream.of(annotationClass).noneMatch(f::isAnnotationPresent))
+                       .collect(toList());
     }
 }

@@ -1,13 +1,14 @@
 package io.github.lfcamarati.resthateoas.core;
 
-class Link {
+class LinkImpl {
+    static final String LINKS = "_links";
     static final String SELF = "self";
 
     private String href;
 
-    private Link() {}
+    private LinkImpl() {}
 
-    public Link(String href) {
+    public LinkImpl(String href) {
         this.href = href;
     }
 
