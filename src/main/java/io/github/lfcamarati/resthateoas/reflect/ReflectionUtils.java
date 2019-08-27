@@ -69,10 +69,24 @@ public class ReflectionUtils {
         for (Field field : fields) {
             try {
                 field.setAccessible(true);
-                Object value = field.get(resource);
 
-                if (value != null) {
-                    embeddeds.put(field.getName(), value);
+                if (Collection.class.isAssignableFrom(field.getType())) {
+                    Collection collection = (Collection) field.get(resource);
+                    Object[] listValue = new Object[collection.size()];
+                    int count = 0;
+
+                    for(Object obj : collection) {
+                        listValue[count] = obj;
+                        count++;
+                    }
+
+                    embeddeds.put(field.getName(), listValue);
+                } else {
+                    Object value = field.get(resource);
+
+                    if (value != null) {
+                        embeddeds.put(field.getName(), value);
+                    }
                 }
             } catch (Exception ex) {
                 System.out.println(ex.getMessage());

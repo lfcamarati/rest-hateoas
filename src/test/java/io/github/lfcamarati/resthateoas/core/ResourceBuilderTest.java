@@ -2,6 +2,7 @@ package io.github.lfcamarati.resthateoas.core;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.github.lfcamarati.resthateoas.core.jsonplaceholder.Photo;
 import io.github.lfcamarati.resthateoas.core.jsonplaceholder.Post;
 import io.github.lfcamarati.resthateoas.core.jsonplaceholder.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +26,9 @@ class ResourceBuilderTest {
         // Arrange
         final Post post = new Post();
         final User user = new User();
+        post.add(new Photo(1L));
+        post.add(new Photo(2L));
+        post.add(new Photo(3L));
 
         // Act
         Map<String, Object> actual = fixture.create(post);

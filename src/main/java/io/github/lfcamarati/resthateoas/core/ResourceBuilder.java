@@ -5,6 +5,8 @@ import io.github.lfcamarati.resthateoas.annotations.Link;
 import io.github.lfcamarati.resthateoas.annotations.Self;
 import io.github.lfcamarati.resthateoas.reflect.ReflectionUtils;
 
+import java.lang.reflect.Array;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +48,11 @@ public class ResourceBuilder {
         }
 
         for(Map.Entry<String, Object> embedded : embeddeds.entrySet()) {
-            embeddedsValue.put(embedded.getKey(), create(embedded.getValue()));
+            if(embedded.getValue() != null && embedded.getValue().getClass().isArray()) {
+                embeddedsValue.put(embedded.getKey(), embedded.getValue());
+            } else {
+                embeddedsValue.put(embedded.getKey(), create(embedded.getValue()));
+            }
         }
 
         for(Map.Entry<String, Object> value : simpleFields.entrySet()) {

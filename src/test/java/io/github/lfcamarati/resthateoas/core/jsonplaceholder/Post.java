@@ -5,6 +5,9 @@ import io.github.lfcamarati.resthateoas.annotations.Link;
 import io.github.lfcamarati.resthateoas.annotations.Self;
 import io.github.lfcamarati.resthateoas.core.Resource;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Link(key = "comments", href = "https://jsonplaceholder.typicode.com/posts/{id}/comments")
 public class Post implements Resource {
 
@@ -13,6 +16,9 @@ public class Post implements Resource {
 
     private String title = "Some Title";
     private String body = "Body";
+
+    @Embedded
+    private List<Photo> photos = new ArrayList<>();
 
     @Embedded
     private User user = new User();
@@ -31,5 +37,17 @@ public class Post implements Resource {
 
     public User getUser() {
         return user;
+    }
+
+    public List<Photo> getPhotos() {
+        return photos;
+    }
+
+    public void add(Photo photo) {
+        if(photos == null) {
+            photos = new ArrayList<Photo>();
+        }
+
+        photos.add(photo);
     }
 }
