@@ -5,7 +5,7 @@ import io.github.lfcamarati.resthateoas.annotations.Self;
 public class User {
 
     @Self("https://jsonplaceholder.typicode.com/users/{id}")
-    private Long id = 1L;
+    private Long id = 10L;
 
     private String name = "Leanne Graham";
     private String username = "Bret";

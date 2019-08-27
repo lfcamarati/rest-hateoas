@@ -3,13 +3,14 @@ package io.github.lfcamarati.resthateoas.reflect;
 import io.github.lfcamarati.resthateoas.annotations.Embedded;
 import io.github.lfcamarati.resthateoas.annotations.Link;
 import io.github.lfcamarati.resthateoas.annotations.Self;
+import io.github.lfcamarati.resthateoas.core.LinkImpl;
+import io.github.lfcamarati.resthateoas.core.SelfImpl;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -17,15 +18,19 @@ import static java.util.stream.Stream.of;
 
 public class ReflectionUtils {
 
+    private static final Pattern PATTERN = Pattern.compile("\\{(.*?)\\}");;
+
     private Object resource;
     private Class<? extends Object> klass;
+    private Map<String, Object> simpleFields;
 
     public ReflectionUtils(Object resource) {
         this.resource = resource;
         this.klass = resource.getClass();
+        processSimpleFields();
     }
 
-    public Self self() {
+    public SelfImpl self() {
         List<Field> fields = getFields(Self.class);
 
         if(fields.isEmpty()) {
@@ -36,17 +41,25 @@ public class ReflectionUtils {
             throw new IllegalStateException("Only 1 self is allowed");
         }
 
-        return fields.get(0).getAnnotation(Self.class);
+        Self self = fields.get(0).getAnnotation(Self.class);
+
+        return new SelfImpl(replace(self.value()));
     }
 
-    public List<Link> links() {
-        Link[] links = klass.getAnnotationsByType(Link.class);
+    public List<LinkImpl> links() {
+        Link[] linksAnnotations = klass.getAnnotationsByType(Link.class);
 
-        if(links == null || links.length == 0) {
+        if(linksAnnotations == null || linksAnnotations.length == 0) {
             return Collections.emptyList();
         }
 
-        return of(links).collect(toList());
+        List<LinkImpl> links = new ArrayList<>();
+
+        for(Link link : linksAnnotations) {
+            links.add(new LinkImpl(link.key(), replace(link.href())));
+        }
+
+        return links;
     }
     
     public Map<String, Object> embeddeds() {
@@ -68,12 +81,16 @@ public class ReflectionUtils {
 
         return embeddeds;
     }
-    
-    public Map<String, Object> simpleFields() {
-        List<Field> simpleFields = getSimpleFields(Self.class, Link.class, Embedded.class);
+
+    public Map<String, Object> getSimpleFields() {
+        return simpleFields;
+    }
+
+    private void processSimpleFields() {
+        List<Field> fields = getSimpleFields(Self.class, Link.class, Embedded.class);
         Map<String, Object> values = new HashMap<>();
 
-        for (Field field : simpleFields) {
+        for (Field field : fields) {
             try {
                 field.setAccessible(true);
                 Object value = field.get(resource);
@@ -86,12 +103,50 @@ public class ReflectionUtils {
             }
         }
 
-        return values;
+        simpleFields = values;
     }
 
     private List<Field> getFields(Class<? extends Annotation> annotationClass) {
         return of(klass.getDeclaredFields()).filter(f -> f.isAnnotationPresent(annotationClass))
                 .collect(toList());
+    }
+
+    private Field getField(String fieldName) {
+        try {
+            return klass.getDeclaredField(fieldName);
+        } catch (NoSuchFieldException e) {
+            return null;
+        }
+    }
+
+    private String replace(String value) {
+        Matcher m = PATTERN.matcher(value);
+        StringBuffer sb = new StringBuffer();
+
+        while (m.find()) {
+            String key = m.group(1);
+            Field field = getField(key);
+            String keyValueString;
+
+            try {
+                field.setAccessible(true);
+                Object fieldValue = field.get(resource);
+
+                if(fieldValue != null) {
+                    keyValueString = fieldValue.toString();
+                } else {
+                    keyValueString = "??" + key + "??";
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+                keyValueString = "!!" + key + "!!";
+            }
+
+            m.appendReplacement(sb, Matcher.quoteReplacement(keyValueString));
+        }
+
+        m.appendTail(sb);
+        return sb.toString();
     }
 
     @SafeVarargs

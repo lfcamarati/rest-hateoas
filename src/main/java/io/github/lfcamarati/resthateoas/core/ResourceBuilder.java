@@ -27,10 +27,10 @@ public class ResourceBuilder {
         }
 
         ReflectionUtils reflection = new ReflectionUtils(resource);
-        return apply(reflection.self(), reflection.links(), reflection.embeddeds(), reflection.simpleFields());
+        return apply(reflection.self(), reflection.links(), reflection.embeddeds(), reflection.getSimpleFields());
     }
 
-    private Map<String, Object> apply(Self self, List<Link> links, Map<String, Object> embeddeds,
+    private Map<String, Object> apply(SelfImpl self, List<LinkImpl> links, Map<String, Object> embeddeds,
             Map<String, Object> simpleFields) {
 
         Map<String, Object> attrs = new HashMap<>();
@@ -38,11 +38,11 @@ public class ResourceBuilder {
         Map<String, Object> embeddedsValue = new HashMap<>();
 
         if(self != null) {
-            linksValue.put(LinkImpl.SELF, new LinkImpl(self.value()));
+            linksValue.put(SelfImpl.SELF, new LinkImpl(SelfImpl.SELF, self.getHref()));
         }
 
-        for(Link link : links) {
-            linksValue.put(link.key(), new LinkImpl(link.href()));
+        for(LinkImpl link : links) {
+            linksValue.put(link.getKey(), link);
         }
 
         for(Map.Entry<String, Object> embedded : embeddeds.entrySet()) {
