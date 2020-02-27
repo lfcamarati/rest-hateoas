@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import java.util.List;
+import java.util.Optional;
 
 @ControllerAdvice
 public class ResourceResponseBodyAdvice implements ResponseBodyAdvice<Object> {
@@ -26,12 +27,16 @@ public class ResourceResponseBodyAdvice implements ResponseBodyAdvice<Object> {
             Class<? extends HttpMessageConverter<?>> aClass, ServerHttpRequest serverHttpRequest,
             ServerHttpResponse serverHttpResponse) {
 
-        List<String> accept = serverHttpRequest.getHeaders().get(HttpHeaders.ACCEPT);
+        List<String> contentType = serverHttpRequest.getHeaders().get(HttpHeaders.CONTENT_TYPE);
 
-        if(accept == null || accept.isEmpty() || !accept.contains("application/hal+json")) {
-            return resource;
+        if (contentType != null) {
+            Optional<String> halEnabled = contentType.stream().filter(h -> h.contains("application/hal+json")).findFirst();
+
+            if (halEnabled.isPresent()) {
+                return new ResourceBuilder().create(resource);
+            }
         }
 
-        return new ResourceBuilder().create(resource);
+        return resource;
     }
 }
