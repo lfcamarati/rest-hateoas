@@ -1,7 +1,7 @@
 package io.github.lfcamarati.resthateoas.core;
 
 class EmbeddedImpl {
-    static final String EMBEDDEDS = "_embedded";
+    static final String EMBEDDED = "_embedded";
 
     private String href;
 
